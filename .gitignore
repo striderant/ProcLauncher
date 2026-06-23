@@ -1,0 +1,15 @@
+node_modules/
+dist/
+release/
+
+*.zip
+*.log
+.env
+.env.*
+
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+.omega-publish-*/
