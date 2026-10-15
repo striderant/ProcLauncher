@@ -29,7 +29,7 @@ jobs:
             args: --mac dmg zip
             artifact: ProcLauncher-mac
           - os: ubuntu-latest
-            args: --linux AppImage deb
+            args: --linux AppImage
             artifact: ProcLauncher-linux
     runs-on: ${{ matrix.os }}
     steps:
