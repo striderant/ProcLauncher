@@ -36,9 +36,14 @@ describe('launch argument helpers', () => {
       ],
       { auth_player_name: 'Alex' }
     );
-    assert.deepEqual(out, process.platform === 'win32'
+    // Default-deny when no rule matches (also gates feature-flagged args
+    // like --demo), so expectations differ per OS.
+    const expected = process.platform === 'win32'
       ? ['--plain', '--win-only', '--a', '--b Alex']
-      : ['--plain', '--not-win', '--a', '--b Alex']);
+      : process.platform === 'darwin'
+        ? ['--plain', '--mac-only', '--a', '--b Alex']
+        : ['--plain', '--a', '--b Alex'];
+    assert.deepEqual(out, expected);
   });
 
   it('checkRules defaults closed then opens on allow', () => {

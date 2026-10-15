@@ -15,6 +15,9 @@ on:
 
 jobs:
   build:
+    # Publishing releases needs write access (org/repo defaults are read-only).
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
