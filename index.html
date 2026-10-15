@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/proc-icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Proc Launcher</title>
+    <style>
+      /* ─── Boot splash: inline so it paints before the JS bundle loads ─── */
+      #boot-splash {
+        position: fixed; inset: 0; z-index: 99999;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 18px; background: #0a0a0a; color: #fff;
+        font-family: 'Outfit', system-ui, sans-serif;
+        transition: opacity 0.28s ease-out;
+      }
+      #boot-splash.done { opacity: 0; pointer-events: none; }
+      #boot-splash .chip { animation: boot-shake 0.35s linear infinite; }
+      @keyframes boot-shake {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        12% { transform: translate(-3px, 2px) rotate(-2deg); }
+        25% { transform: translate(3px, -2px) rotate(2deg); }
+        37% { transform: translate(-2px, -3px) rotate(-1deg); }
+        50% { transform: translate(3px, 3px) rotate(1deg); }
+        62% { transform: translate(-3px, -1px) rotate(2deg); }
+        75% { transform: translate(2px, 3px) rotate(-2deg); }
+        87% { transform: translate(1px, -3px) rotate(1deg); }
+      }
+      #boot-splash .wordmark { font-weight: 900; letter-spacing: 0.28em; font-size: 15px; text-indent: 0.28em; }
+      #boot-splash .loader {
+        --color-1: rgba(255, 255, 255, 0.2);
+        --color-2: #fff;
+        --size: 1px;
+        width: calc(160 * var(--size));
+        height: calc(8 * var(--size));
+        border-radius: calc(4 * var(--size));
+        display: block;
+        margin: 0 auto;
+        position: relative;
+        background: var(--color-1);
+        overflow: hidden;
+        box-sizing: border-box;
+      }
+      #boot-splash .loader::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: calc(70 * var(--size));
+        border-radius: inherit;
+        background: var(--color-2);
+        box-sizing: border-box;
+        animation: boot-slide 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      }
+      @keyframes boot-slide {
+        0% { transform: translateX(calc(-70 * var(--size))); }
+        100% { transform: translateX(calc(160 * var(--size))); }
+      }
+      #boot-splash .status { font-size: 13px; color: rgba(255,255,255,0.4); min-height: 18px; }
+    </style>
+  </head>
+  <body>
+    <div id="boot-splash">
+      <svg class="chip" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="16" height="16" x="4" y="4" rx="2" />
+        <rect width="6" height="6" x="9" y="9" />
+        <path d="M8 2v2" />
+        <path d="M12 2v2" />
+        <path d="M16 2v2" />
+        <path d="M8 20v2" />
+        <path d="M12 20v2" />
+        <path d="M16 20v2" />
+        <path d="M2 8h2" />
+        <path d="M2 12h2" />
+        <path d="M2 16h2" />
+        <path d="M20 8h2" />
+        <path d="M20 12h2" />
+        <path d="M20 16h2" />
+      </svg>
+      <div class="wordmark">PROC LAUNCHER</div>
+      <div class="loader"></div>
+      <div class="status" id="boot-status">Starting…</div>
+    </div>
+    <script>
+      // Cycle status lines so boot feels alive. Removed with the splash.
+      (function () {
+        var msgs = ['Loading profiles…', 'Checking versions…', 'Preparing instances…', 'Warming up…'];
+        var i = 0, el = document.getElementById('boot-status');
+        window.__bootTimer = setInterval(function () {
+          i = (i + 1) % msgs.length;
+          if (el) el.textContent = msgs[i];
+        }, 450);
+      })();
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

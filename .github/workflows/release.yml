@@ -1,0 +1,51 @@
+# Builds distributables per OS. Windows installers can also be built locally
+# (npm run build:win); macOS/Linux targets need their native runners, so they
+# build here on tags or manual dispatch.
+#
+# Publishing: on v* tags the built artifacts are published to the GitHub
+# Release (with latest.yml), which is what the in-app updater reads.
+# Manual dispatches only upload artifacts, no release is created.
+name: Release builds
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            args: --win nsis portable msi
+            artifact: ProcLauncher-win
+          - os: macos-latest
+            args: --mac dmg zip
+            artifact: ProcLauncher-mac
+          - os: ubuntu-latest
+            args: --linux AppImage deb
+            artifact: ProcLauncher-linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npx electron-builder ${{ matrix.args }} ${{ env.PUBLISH_FLAG }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH_FLAG: ${{ startsWith(github.ref, 'refs/tags/v') && '--publish always' || '--publish never' }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: release/

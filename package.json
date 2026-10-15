@@ -1,0 +1,109 @@
+{
+  "name": "proc-launcher",
+  "version": "0.1.0",
+  "description": "A powerful Minecraft launcher",
+  "author": "Proc Launcher Team",
+  "main": "electron/main.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/striderant/ProcLauncher.git"
+    },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron": "cross-env ELECTRON_RENDERER_URL=http://127.0.0.1:3000 electron .",
+    "start": "concurrently -k \"npm run dev\" \"npm run electron\"",
+    "build:exe": "npm run build && electron-builder --win portable",
+    "build:win": "npm run build && electron-builder --win nsis portable msi",
+    "build:linux": "npm run build && electron-builder --linux AppImage deb",
+    "build:mac": "npm run build && electron-builder --mac dmg zip",
+    "icons": "node scripts/make-icons.js",
+    "package": "npm run build && electron-packager . ProcLauncher --platform=win32 --arch=x64 --out=release-build --overwrite",
+    "start:debug": "set DEBUG_LAUNCHER=true && npm run start",
+    "test": "node --test \"test/*.test.js\""
+  },
+  "build": {
+    "appId": "com.proc.launcher",
+    "productName": "Proc Launcher",
+    "asar": false,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis",
+        "portable",
+        "msi"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Proc Launcher"
+    },
+    "msi": {
+      "oneClick": false,
+      "perMachine": false,
+      "shortcutName": "Proc Launcher"
+    },
+    "mac": {
+      "icon": "build/icon.icns",
+      "category": "public.app-category.games",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "category": "Game",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "striderant",
+      "repo": "ProcLauncher",
+      "releaseType": "release"
+    }
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.17",
+    "axios": "^1.6.0",
+    "caniuse-lite": "^1.0.30001814",
+    "electron-updater": "^6.6.2",
+    "lucide-react": "^1.7.0",
+    "prismarine-auth": "^3.1.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^42.4.1",
+    "electron-builder": "^26.15.3",
+    "electron-packager": "^17.1.2",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5",
+    "vite": "^4.4.9"
+  },
+  "overrides": {
+    "bufferutil": "npm:empty-module",
+    "utf-8-validate": "npm:empty-module"
+  },
+  "allowScripts": {
+    "electron@8.5.5": true
+  }
+}

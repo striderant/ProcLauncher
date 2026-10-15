@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Dark tile so the white chip reads on light browser tabs -->
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="#111111"/>
+  <g transform="translate(8, 8) scale(2)" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="16" height="16" x="4" y="4" rx="2" />
+    <rect width="6" height="6" x="9" y="9" />
+    <path d="M8 2v2" />
+    <path d="M12 2v2" />
+    <path d="M16 2v2" />
+    <path d="M8 20v2" />
+    <path d="M12 20v2" />
+    <path d="M16 20v2" />
+    <path d="M2 8h2" />
+    <path d="M2 12h2" />
+    <path d="M2 16h2" />
+    <path d="M20 8h2" />
+    <path d="M20 12h2" />
+    <path d="M20 16h2" />
+  </g>
+</svg>

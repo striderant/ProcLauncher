@@ -1,15 +1,45 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
 release/
+release-build/
 
+# Packaged installers / portable artifacts (build/icon.ico itself is tracked)
+*.exe
+*.msi
+*.dmg
+*.AppImage
+*.snap
+*.blockmap
 *.zip
+
+# Runtime logs (repo copy; per-user logs live under userData, not here)
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env secrets (commit .env.example instead)
 .env
 .env.*
+!.env.example
 
+# OS + editor noise
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+*.swp
+*~
 
-.omega-publish-*/
+# Test / coverage artifacts
+coverage/
+
+# Local publish helper dirs
+.proc-publish-*/
+
+# Local-only agent instructions (not shipped to clones)
+AGENT.md
