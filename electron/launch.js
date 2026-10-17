@@ -502,24 +502,18 @@ async function launchCustomClientInner(event, options, mergedVersionJson = null,
   if (launchCancelled) throw new Error('Launch cancelled by user.');
 
   return new Promise((resolve) => {
-    const child = spawn(javaPath, args, {
+    const { child, stopTail } = spawnDetachedGame({
+      javaPath,
+      args,
       cwd: gameDir,
-      detached: false,
-      stdio: ['ignore', 'pipe', 'pipe'],
+      label: options.instanceId || baseVersionNumber || 'game',
+      onOutput: (message) => {
+        logger.game(message);
+        try { event.sender.send('log', { type: 'data', message }); } catch {}
+      },
     });
     activeGameChild = child;
     const clearActive = () => { if (activeGameChild === child) activeGameChild = null; };
-
-    child.stdout.on('data', (d) => {
-      const message = d.toString().trimEnd();
-      event.sender.send('log', { type: 'data', message });
-      logger.game(message);
-    });
-    child.stderr.on('data', (d) => {
-      const message = d.toString().trimEnd();
-      event.sender.send('log', { type: 'data', message });
-      logger.game(message);
-    });
 
     child.on('spawn', () => {
       event.sender.send('log', { type: 'info', message: `Game started (PID: ${child.pid})` });
@@ -533,6 +527,7 @@ async function launchCustomClientInner(event, options, mergedVersionJson = null,
     });
 
     child.on('error', (err) => {
+      stopTail();
       releaseLaunch();
       clearActive();
       event.sender.send('log', { type: 'error', message: `Process error: ${err.message}` });
@@ -540,12 +535,44 @@ async function launchCustomClientInner(event, options, mergedVersionJson = null,
     });
 
     child.on('close', (code) => {
+      stopTail();
       releaseLaunch();
       clearActive();
       event.sender.send('launch-finished', code);
       event.sender.send('log', { type: 'info', message: `Minecraft exited (code ${code})` });
     });
   });
+}
+
+// Spawn the game as a fully detached process so it survives the launcher
+// quitting. Its stdout/stderr go to a per-launch log file (never pipes back to
+// this process, which would tie the game's lifetime to the launcher and break
+// on launcher exit); the UI tails that file for live output. spawnFn is
+// injectable for tests.
+function spawnDetachedGame({ javaPath, args, cwd, label, onOutput, spawnFn = spawn }) {
+  const gameLog = logger.openGameLog(label);
+  const stdio = gameLog ? ['ignore', gameLog.fd, gameLog.fd] : ['ignore', 'ignore', 'ignore'];
+  const child = spawnFn(javaPath, args, {
+    cwd,
+    // detached => DETACHED_PROCESS on Windows (no console window, own process
+    // group) and independent of the launcher. windowsHide stays false to avoid
+    // the invalid DETACHED_PROCESS | CREATE_NO_WINDOW combination.
+    detached: true,
+    windowsHide: false,
+    stdio,
+  });
+  // The child inherits its own handle to the file; drop the launcher's copy.
+  if (gameLog) {
+    try { fs.closeSync(gameLog.fd); } catch {}
+  }
+  // Do not keep the launcher's event loop alive for the game.
+  if (child && typeof child.unref === 'function') child.unref();
+
+  let stopTail = () => {};
+  if (gameLog && typeof onOutput === 'function') {
+    stopTail = logger.tailFile(gameLog.file, onOutput);
+  }
+  return { child, stopTail, gameLog };
 }
 
 function isLaunchCancelled() {
@@ -572,4 +599,4 @@ function requestCancelLaunch(event) {
   return { success: true, stopped: false };
 }
 
-module.exports = { splitArgumentString, replaceArgumentTokens, evaluateArgumentEntries, removeJsonManagedJvmArgs, jarContainsClass, findJarContainingClass, ensureMainClassOnClasspath, readMainClassFromJar, ensureClientJarFromJson, safeModFileName, offlineProfileId, ensureOfflineServicesServer, installModrinthVersion, launchCustomClient, requestCancelLaunch, resetLaunchCancelled, isLaunchCancelled, isLaunchInFlight, tryAcquireLaunch, releaseLaunch };
+module.exports = { splitArgumentString, replaceArgumentTokens, evaluateArgumentEntries, removeJsonManagedJvmArgs, jarContainsClass, findJarContainingClass, ensureMainClassOnClasspath, readMainClassFromJar, ensureClientJarFromJson, safeModFileName, offlineProfileId, ensureOfflineServicesServer, installModrinthVersion, launchCustomClient, requestCancelLaunch, resetLaunchCancelled, isLaunchCancelled, isLaunchInFlight, tryAcquireLaunch, releaseLaunch, spawnDetachedGame };

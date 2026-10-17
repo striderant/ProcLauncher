@@ -1176,7 +1176,7 @@ export default function App() {
           />
         </svg>
         {/* Center Percentage Display */}
-        <span className="absolute font-mono text-[14px] font-bold text-white">
+        <span className="absolute font-mono text-[8px] leading-none font-bold text-white">
           {launchProgress}%
         </span>
       </div>
